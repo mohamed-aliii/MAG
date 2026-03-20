@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
+import MagneticLogo from './MagneticLogo';
 
 const navLinks = [
   { name: 'About', href: '#about' },
@@ -34,53 +35,7 @@ export default function Navbar() {
             isScrolled ? 'py-2' : 'py-3'
           }`}
         >
-          <motion.a 
-            href="#" 
-            className="relative text-2xl font-bold tracking-tighter text-white group"
-            initial="initial"
-            whileHover="hover"
-          >
-            <motion.span
-              className="inline-block"
-              variants={{
-                initial: { x: 0 },
-                hover: { x: -2 }
-              }}
-            >
-              MAG
-            </motion.span>
-            <motion.span 
-              className="text-emerald-500 inline-block"
-              variants={{
-                initial: { scale: 1, opacity: 1 },
-                hover: { 
-                  scale: [1, 1.5, 1],
-                  opacity: [1, 0.5, 1],
-                  transition: { repeat: Infinity, duration: 1 }
-                }
-              }}
-            >
-              .
-            </motion.span>
-            
-            {/* Animated underline/shimmer effect */}
-            <motion.div 
-              className="absolute -bottom-1 left-0 h-[2px] bg-emerald-500"
-              variants={{
-                initial: { width: 0, opacity: 0 },
-                hover: { width: '100%', opacity: 1 }
-              }}
-            />
-            
-            {/* Subtle glow on hover */}
-            <motion.div 
-              className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full -z-10"
-              variants={{
-                initial: { opacity: 0, scale: 0.5 },
-                hover: { opacity: 1, scale: 1.2 }
-              }}
-            />
-          </motion.a>
+          <MagneticLogo />
           <div className="hidden md:flex space-x-8">
             {navLinks.map((link) => (
               <a
