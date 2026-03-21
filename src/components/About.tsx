@@ -16,13 +16,20 @@ export default function About() {
               About <span className="text-emerald-500">Me</span>
             </h2>
             <p className="text-base md:text-lg text-slate-400 mb-6 leading-relaxed">
-              Junior AI/ML Engineer with hands-on training across RAG systems, computer vision, data pipelines, and
-              MLOps deployment. Delivered production-grade projects using FastAPI, LangChain, PyTorch, and Docker,
-              backed by DeepLearning.AI specializations and an AWS certification.
+              I'm an AI/ML engineer who thrives at the intersection of research and real-world impact. From
+              publishing federated learning research to shipping computer vision systems in production, I chase
+              the hardest problems I can find — and I don't stop until I've built something that actually works.
+            </p>
+            <p className="text-base md:text-lg text-slate-400 mb-6 leading-relaxed">
+              What drives me is an obsession with learning. Every project I take on pushes me into unfamiliar
+              territory — and that's exactly where I want to be. I've gone from classical ML to agentic AI
+              pipelines, from big data architectures to medical imaging research, all within the span of a year,
+              because I believe the best engineers never stop evolving.
             </p>
             <p className="text-base md:text-lg text-slate-400 mb-8 leading-relaxed">
-              Seeking an internship to apply practical ML engineering skills in building scalable, real-world AI
-              solutions. Currently pursuing a Bachelor of Computer and Data Science at Alexandria University.
+              I'm currently finishing my Computer & Data Science degree at Alexandria University and actively
+              seeking an opportunity where I can bring relentless curiosity, strong engineering instincts, and
+              a genuine passion for AI to a team building something meaningful.
             </p>
             <div className="grid grid-cols-2 gap-4 md:gap-6">
               <div className="glass p-4 md:p-6 rounded-2xl">
