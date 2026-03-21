@@ -1,148 +1,216 @@
-import { useRef, useEffect, useState } from 'react';
-import { motion, useAnimationControls } from 'motion/react';
-import { Award, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Award, ExternalLink, Calendar, Building2, BookOpen } from 'lucide-react';
 
 const certifications = [
   {
-    title: "Agentic AI",
-    issuer: "DeepLearning.AI",
-    year: "2026",
-    link: "#"
+    title: 'Agentic AI',
+    issuer: 'DeepLearning.AI',
+    date: 'January 2026',
+    image: '/certs/agentic-ai.jpg',
+    link: '#',
   },
   {
-    title: "MLOps Specialization",
-    issuer: "DeepLearning.AI",
-    year: "2025",
-    link: "#"
+    title: 'MLOps Specialization',
+    issuer: 'DeepLearning.AI',
+    date: 'August 2025',
+    image: '/certs/mlops.jpg',
+    link: '#',
   },
   {
-    title: "NLP Specialization",
-    issuer: "DeepLearning.AI",
-    year: "2025",
-    link: "#"
+    title: 'NLP Specialization',
+    issuer: 'DeepLearning.AI',
+    date: 'April 2025',
+    image: '/certs/nlp.jpg',
+    link: '#',
   },
   {
-    title: "Deep Learning Specialization",
-    issuer: "DeepLearning.AI",
-    year: "2024",
-    link: "#"
+    title: 'Deep Learning Specialization',
+    issuer: 'DeepLearning.AI',
+    date: 'October 2024',
+    image: '/certs/deep-learning.jpg',
+    link: '#',
   },
   {
-    title: "ML Specialization",
-    issuer: "DeepLearning.AI",
-    year: "2023",
-    link: "#"
+    title: 'ML Specialization',
+    issuer: 'DeepLearning.AI',
+    date: 'May 2023',
+    image: '/certs/ml-spec.jpg',
+    link: '#',
   },
   {
-    title: "AWS Cloud Foundations",
-    issuer: "Amazon Web Services",
-    year: "2023",
-    link: "#"
-  }
+    title: 'AWS Cloud Foundations',
+    issuer: 'Amazon Web Services',
+    date: 'March 2023',
+    image: '/certs/aws-cloud.jpg',
+    link: '#',
+  },
 ];
 
-export default function Certifications() {
-  const sliderRef = useRef<HTMLDivElement>(null);
-  const [isPaused, setIsPaused] = useState(false);
+// Duplicate items to create seamless infinite loop
+const items = [...certifications, ...certifications];
 
-  const scroll = (direction: 'left' | 'right') => {
-    if (sliderRef.current) {
-      const scrollAmount = window.innerWidth < 768 ? 300 : 400;
-      const maxScroll = sliderRef.current.scrollWidth - sliderRef.current.clientWidth;
-      
-      let targetScroll = direction === 'right' 
-        ? sliderRef.current.scrollLeft + scrollAmount 
-        : sliderRef.current.scrollLeft - scrollAmount;
+interface CertCardProps {
+  cert: typeof certifications[number];
+}
 
-      // Handle looping
-      if (direction === 'right' && sliderRef.current.scrollLeft >= maxScroll - 10) {
-        targetScroll = 0;
-      } else if (direction === 'left' && sliderRef.current.scrollLeft <= 10) {
-        targetScroll = maxScroll;
-      }
-
-      sliderRef.current.scrollTo({
-        left: targetScroll,
-        behavior: 'smooth'
-      });
-    }
-  };
-
-  useEffect(() => {
-    if (isPaused) return;
-
-    const interval = setInterval(() => {
-      scroll('right');
-    }, 3000); // Increased to 3s for better readability
-
-    return () => clearInterval(interval);
-  }, [isPaused]);
+function CertCard({ cert }: CertCardProps) {
+  const [hovered, setHovered] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   return (
-    <section 
-      id="certifications" 
-      className="py-20 md:py-32 px-6 overflow-hidden"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
+    <div
+      className="relative shrink-0 rounded-2xl overflow-hidden cursor-pointer"
+      style={{
+        width: '340px',
+        boxShadow: '0 0 0 1px rgba(255,255,255,0.07)',
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
-      <div className="max-w-7xl mx-auto">
-        <motion.div 
+      {/* Certificate image / placeholder */}
+      {!imgError ? (
+        <img
+          src={cert.image}
+          alt={cert.title}
+          onError={() => setImgError(true)}
+          className="w-full h-auto object-cover block"
+          draggable={false}
+        />
+      ) : (
+        <div
+          className="w-full flex flex-col items-center justify-center gap-3 bg-slate-900 border border-slate-800"
+          style={{ height: '220px' }}
+        >
+          <Award className="w-10 h-10 text-emerald-500 opacity-50" />
+          <div className="text-center px-4">
+            <p className="text-white font-bold text-sm leading-snug">{cert.title}</p>
+            <p className="text-slate-500 text-xs mt-1">{cert.issuer}</p>
+          </div>
+          <p className="text-xs text-slate-600 px-4 text-center">
+            <code className="text-emerald-600">{cert.image}</code>
+          </p>
+        </div>
+      )}
+
+      {/* Hover overlay */}
+      <AnimatePresence>
+        {hovered && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 flex flex-col justify-end"
+            style={{
+              background:
+                'linear-gradient(to top, rgba(3,7,18,0.97) 0%, rgba(3,7,18,0.75) 50%, rgba(3,7,18,0.10) 100%)',
+            }}
+          >
+            {/* External link */}
+            <a
+              href={cert.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={e => e.stopPropagation()}
+              className="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-900/80 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-emerald-400 hover:border-emerald-500/50 transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+
+            <div className="p-4 space-y-2">
+              <div className="flex items-start gap-2">
+                <BookOpen className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" />
+                <p className="text-white font-bold text-sm leading-snug">{cert.title}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Building2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <p className="text-slate-300 text-xs">{cert.issuer}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Calendar className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <p className="text-slate-300 text-xs">{cert.date}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Border glow on hover */}
+      <motion.div
+        className="absolute inset-0 rounded-2xl pointer-events-none"
+        animate={{
+          boxShadow: hovered
+            ? '0 0 0 2px rgba(16,185,129,0.55), 0 8px 32px rgba(16,185,129,0.12)'
+            : '0 0 0 1px rgba(255,255,255,0.07)',
+        }}
+        transition={{ duration: 0.2 }}
+      />
+    </div>
+  );
+}
+
+export default function Certifications() {
+  const [paused, setPaused] = useState(false);
+
+  return (
+    <section id="certifications" className="py-20 md:py-32 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6">
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-5xl font-bold mb-4">Professional <span className="text-emerald-500">Certifications</span></h2>
+          <h2 className="text-3xl md:text-5xl font-bold mb-4">
+            Professional <span className="text-emerald-500">Certifications</span>
+          </h2>
           <p className="text-slate-400">Specialized training and industry recognition</p>
         </motion.div>
-        
-        <div className="relative">
-          <div 
-            ref={sliderRef}
-            className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory no-scrollbar scroll-smooth"
-          >
-            {certifications.map((cert, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="min-w-[280px] md:min-w-[350px] snap-center glass p-8 rounded-3xl border-t border-t-emerald-500/20 flex flex-col justify-between h-64"
-              >
-                <div>
-                  <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-500 mb-4">
-                    <Award className="w-5 h-5" />
-                  </div>
-                  <h3 className="text-xl font-bold text-white mb-2">{cert.title}</h3>
-                  <p className="text-slate-400 text-sm">{cert.issuer}</p>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-emerald-500 font-bold">{cert.year}</span>
-                  <a href={cert.link} className="hover:text-emerald-500 transition-colors">
-                    <ExternalLink className="w-4 h-4 text-slate-500" />
-                  </a>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-          
-          <div className="flex justify-center gap-4 mt-8">
-            <button 
-              onClick={() => scroll('left')}
-              className="w-12 h-12 glass rounded-full flex items-center justify-center text-white hover:bg-emerald-500 hover:text-slate-950 transition-all"
-            >
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-            <button 
-              onClick={() => scroll('right')}
-              className="w-12 h-12 glass rounded-full flex items-center justify-center text-white hover:bg-emerald-500 hover:text-slate-950 transition-all"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </button>
-          </div>
+      </div>
+
+      {/* Infinite marquee strip */}
+      <div
+        className="relative"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
+        {/* Left fade */}
+        <div
+          className="absolute left-0 top-0 bottom-0 w-32 z-10 pointer-events-none"
+          style={{
+            background: 'linear-gradient(to right, #030712 0%, transparent 100%)',
+          }}
+        />
+        {/* Right fade */}
+        <div
+          className="absolute right-0 top-0 bottom-0 w-32 z-10 pointer-events-none"
+          style={{
+            background: 'linear-gradient(to left, #030712 0%, transparent 100%)',
+          }}
+        />
+
+        <div
+          className="flex gap-5 pb-3"
+          style={{
+            animation: `marquee 32s linear infinite`,
+            animationPlayState: paused ? 'paused' : 'running',
+            width: 'max-content',
+          }}
+        >
+          {items.map((cert, i) => (
+            <CertCard key={`${cert.title}-${i}`} cert={cert} />
+          ))}
         </div>
       </div>
+
+      {/* Keyframe injected via style tag */}
+      <style>{`
+        @keyframes marquee {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+      `}</style>
     </section>
   );
 }
