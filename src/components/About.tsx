@@ -18,11 +18,11 @@ export default function About() {
             <p className="text-base md:text-lg text-slate-400 mb-6 leading-relaxed">
               Junior AI/ML Engineer with hands-on training across RAG systems, computer vision, data pipelines, and
               MLOps deployment. Delivered production-grade projects using FastAPI, LangChain, PyTorch, and Docker,
-              backed by 5 DeepLearning.AI specializations and an AWS certification.
+              backed by DeepLearning.AI specializations and an AWS certification.
             </p>
             <p className="text-base md:text-lg text-slate-400 mb-8 leading-relaxed">
               Seeking an internship to apply practical ML engineering skills in building scalable, real-world AI
-              solutions. Currently pursuing a Bachelor of Computer and Data Science at Alexandria National University.
+              solutions. Currently pursuing a Bachelor of Computer and Data Science at Alexandria University.
             </p>
             <div className="grid grid-cols-2 gap-4 md:gap-6">
               <div className="glass p-4 md:p-6 rounded-2xl">

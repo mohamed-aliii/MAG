@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { motion } from 'motion/react';
 
-const phrases = ['Agentic AI', 'RAG Systems', 'MLOps', 'Computer Vision', 'Generative AI'];
+const phrases = ['Agentic AI', 'RAG Systems', 'Machine Learning' ,'MLOps', 'Computer Vision', 'Generative AI'];
 
 export default function Hero() {
   const [phraseIndex, setPhraseIndex] = useState(0);
