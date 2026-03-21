@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Bot, Database, Cpu, MapPin } from 'lucide-react';
+import { Bot, Database, Cpu, MapPin, Eye } from 'lucide-react';
 
 const experiences = [
   {
@@ -24,6 +24,30 @@ const experiences = [
       "Deployed distributed storage and batch processing solutions using the Hadoop ecosystem (HDFS, MapReduce, Hive).",
       "Built data processing pipelines utilizing Apache Spark to manage high-throughput data ingestion.",
       "Implemented scalable search and analytics features using Elasticsearch across multi-node environments."
+    ]
+  },
+  {
+    title: "AI Researcher — Internship",
+    company: "Nile University",
+    location: "Giza, Egypt",
+    period: "July 2025 - August 2025",
+    icon: <Bot className="w-6 h-6 md:w-8 md:h-8" />,
+    description: [
+"Designed a federated self-supervised pre-training framework using masked image modeling (BEiT & MAE) with Vision Transformers, enabling privacy-preserving collaborative learning across decentralized medical institutions.",
+"Achieved accuracy improvements of up to 5.06% over ImageNet supervised baselines under severe non-IID data heterogeneity across retinal, dermatology, and chest X-ray classification tasks.",
+"Benchmarked label efficiency and out-of-distribution generalization across 5 medical datasets (Retina, Derm, COVID-FL, Skin-FL), demonstrating robust performance with as little as 10% labeled training data."
+    ]
+  },
+  {
+    title: "Computer Vision Engineer — Internship",
+    company: "Cellula Technologies",
+    location: "Cairo, Egypt",
+    period: "June 2025 – August 2025",
+    icon: <Eye className="w-6 h-6 md:w-8 md:h-8" />,
+    description: [
+      "Developed a machine learning model for Teeth Disease Classification using advanced algorithms on a comprehensive medical dataset, achieving high diagnostic accuracy and enabling successful clinical deployment.",
+      "Built a real-time Flood Rapid Mapping system leveraging optical data and image segmentation techniques to identify and monitor flood-affected regions, facilitating timely disaster response.",
+      "Engineered a computer vision-based Shoplifting Detection system to identify suspicious in-store behaviors, delivering an operational retail security solution with actionable insights."
     ]
   },
   {

@@ -61,10 +61,31 @@ const certifications = [
     link: '#',
   },
   {
+    title: 'Computer vision',
+    issuer: 'Cellula Technologies',
+    date: 'August 2025',
+    image: '/certs/ccv.jpg',
+    link: '#',
+  },
+  {
     title: 'Research internship',
     issuer: 'Nile University',
     date: 'August 2025',
     image: '/certs/nile.jpg',
+    link: '#',
+  },
+    {
+    title: 'Deep Learning',
+    issuer: 'Nvidea',
+    date: 'September 2025',
+    image: '/certs/ndl.png',
+    link: '#',
+  },
+  {
+    title: 'Building LLM Applications with Prompt Engineering',
+    issuer: 'Nvidea',
+    date: 'September 2025',
+    image: '/certs/nllm.jpg',
     link: '#',
   },
 ];

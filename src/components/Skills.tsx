@@ -2,20 +2,20 @@ import { motion } from 'motion/react';
 import { Terminal, Brain, Sparkles, Eye, Database, Server } from 'lucide-react';
 
 const skillGroups = [
-  {
+  { 
     title: "Languages & Tools",
     icon: <Terminal />,
-    skills: ["Python", "SQL", "Git", "GitHub", "Bash"]
+    skills: ["Python", "SQL", "Git", "GitHub", "Linux"]
   },
   {
     title: "ML & Deep Learning",
     icon: <Brain />,
-    skills: ["PyTorch", "TensorFlow", "Scikit-learn", "CNNs", "RNNs", "Transformers"]
+    skills: ["PyTorch", "TensorFlow", "Scikit-learn", "Transformers"]
   },
   {
     title: "GenAI & NLP",
     icon: <Sparkles />,
-    skills: ["LangChain", "RAG", "Agentic AI", "Prompt Engineering", "BERT", "FAISS"]
+    skills: ["LangChain", "RAG", "Agentic AI", "Prompt Engineering", "CrewAI", "FAISS"]
   },
   {
     title: "Computer Vision",
@@ -25,12 +25,12 @@ const skillGroups = [
   {
     title: "Data Engineering",
     icon: <Database />,
-    skills: ["Apache Spark", "Hadoop", "HDFS", "Hive", "Elasticsearch"]
+    skills: ["Apache Spark", "Hadoop", "HDFS", "Hive", "Elasticsearch", "Kafka"]  
   },
   {
     title: "Deployment & MLOps",
     icon: <Server />,
-    skills: ["FastAPI", "Docker", "Kubernetes", "CI/CD", "AWS", "Feature Store"]
+    skills: ["FastAPI", "Docker", "CI/CD", "AWS", "Feature Store"]
   }
 ];
 
