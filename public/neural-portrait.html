@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neural Diffusion Portrait</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#030712;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:'Space Grotesk',sans-serif}
+#root{background:#030712;border-radius:20px;padding:28px 20px 22px;display:flex;flex-direction:column;align-items:center;gap:16px;max-width:340px;margin:0 auto}
+#cv-wrap{position:relative;width:280px;height:320px}
+#cv-wrap canvas{position:absolute;inset:0;width:280px;height:280px;border-radius:6px;border:1px solid rgba(16,185,129,0.15)}
+#base-cv{z-index:1}
+#noise-cv{z-index:2}
+#heat-cv{z-index:3;mix-blend-mode:screen}
+#layer-panel{width:280px;background:rgba(16,185,129,0.04);border:1px solid rgba(16,185,129,0.12);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:7px}
+.layer-row{display:flex;align-items:center;gap:8px;font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:0.05em}
+.layer-name{width:110px;flex-shrink:0;color:#94a3b8;transition:color 0.3s}
+.layer-name.active{color:#6ee7b7}
+.layer-name.done{color:#10b981}
+.bar-track{flex:1;height:3px;background:rgba(16,185,129,0.10);border-radius:2px;overflow:hidden;position:relative}
+.bar-fill{height:100%;width:0%;background:linear-gradient(90deg,#10b981,#6ee7b7);border-radius:2px;transition:width 0.6s ease}
+.bar-fill.active{box-shadow:0 0 8px #6ee7b7}
+.layer-pct{width:32px;text-align:right;color:#94a3b8;font-size:9px;transition:color 0.3s}
+.layer-pct.active{color:#6ee7b7}
+.layer-pct.done{color:#10b981}
+#epoch-line{display:flex;gap:16px;align-items:center;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.10em;color:#94a3b8}
+#epoch-line .val-mint{color:#6ee7b7}
+#epoch-line .val-emerald{color:#10b981}
+#retrain-btn{background:transparent;border:1px solid rgba(16,185,129,0.35);color:#10b981;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.14em;padding:6px 16px;border-radius:6px;cursor:pointer;transition:all 0.3s ease}
+#retrain-btn:hover{background:rgba(16,185,129,0.10);border-color:#10b981;color:#6ee7b7;box-shadow:0 0 12px rgba(16,185,129,0.25)}
+</style>
+</head>
+<body>
+<div id="root">
+  <div id="cv-wrap">
+    <canvas id="base-cv" width="280" height="320"></canvas>
+    <canvas id="noise-cv" width="280" height="320"></canvas>
+    <canvas id="heat-cv" width="280" height="320"></canvas>
+  </div>
+  <div id="layer-panel"></div>
+  <div id="epoch-line">
+    <span>EPOCH <span class="val-mint" id="v-epoch">000</span></span>
+    <span>LOSS <span class="val-emerald" id="v-loss">2.4831</span></span>
+    <span>STEP <span class="val-mint" id="v-step">0/512</span></span>
+  </div>
+  <button id="retrain-btn">↺  RETRAIN</button>
+</div>
+<script>
+(function(){
+const W=280,H=320;
+const baseCv=document.getElementById('base-cv');
+const noiseCv=document.getElementById('noise-cv');
+const heatCv=document.getElementById('heat-cv');
+const bx=baseCv.getContext('2d');
+const nx=noiseCv.getContext('2d');
+const hx=heatCv.getContext('2d');
+
+/* ═══ LCG PRNG ═══ */
+let rngState=42;
+function lcg(){rngState=(rngState*1664525+1013904223)&0xFFFFFFFF;return(rngState>>>0)/4294967296}
+
+/* ═══ DRAW TARGET PORTRAIT ═══ */
+// REPLACE: drawTarget() with real photo drawImage() here
+// e.g.
+// const img = new Image();
+// img.src = 'your-photo.jpg';
+// img.onload = () => { bx.drawImage(img, 0, 0, 280, 320); cleanData = bx.getImageData(0, 0, W, H); };
+function drawTarget(){
+  bx.fillStyle='#030712';
+  bx.fillRect(0,0,W,H);
+
+  // Grid lines
+  bx.strokeStyle='rgba(16,185,129,0.06)';
+  bx.lineWidth=1;
+  for(let x=0;x<W;x+=16){bx.beginPath();bx.moveTo(x,0);bx.lineTo(x,H);bx.stroke()}
+  for(let y=0;y<H;y+=16){bx.beginPath();bx.moveTo(0,y);bx.lineTo(W,y);bx.stroke()}
+
+  // Body / shoulder silhouette
+  const bg=bx.createLinearGradient(0,220,0,H);
+  bg.addColorStop(0,'rgba(16,185,129,0.28)');
+  bg.addColorStop(1,'rgba(110,231,183,0.09)');
+  bx.fillStyle=bg;
+  bx.beginPath();
+  bx.moveTo(0,H);bx.lineTo(0,260);
+  bx.bezierCurveTo(30,230,90,220,140,222);
+  bx.bezierCurveTo(190,220,250,230,W,260);
+  bx.lineTo(W,H);bx.closePath();bx.fill();
+
+  // Neck
+  bx.fillStyle='rgba(110,231,183,0.20)';
+  bx.beginPath();
+  bx.moveTo(116,222);bx.lineTo(108,192);bx.lineTo(172,192);bx.lineTo(164,222);
+  bx.closePath();bx.fill();
+
+  // Head ambient glow
+  const hg=bx.createRadialGradient(140,132,20,140,132,85);
+  hg.addColorStop(0,'rgba(16,185,129,0.20)');
+  hg.addColorStop(1,'transparent');
+  bx.fillStyle=hg;bx.fillRect(0,0,W,H);
+
+  // Head ellipse
+  bx.save();bx.beginPath();
+  bx.translate(140,132);bx.scale(1,74/62);
+  bx.arc(0,0,62,0,Math.PI*2);bx.restore();
+  const eg=bx.createLinearGradient(78,58,202,206);
+  eg.addColorStop(0,'rgba(180,255,220,0.55)');
+  eg.addColorStop(0.5,'rgba(110,231,183,0.40)');
+  eg.addColorStop(1,'rgba(5,150,105,0.30)');
+  bx.fillStyle=eg;bx.fill();
+  bx.strokeStyle='rgba(16,185,129,0.40)';bx.lineWidth=1;bx.stroke();
+
+  // Eyes
+  [[110,118],[170,118]].forEach(([ex,ey])=>{
+    const eyeG=bx.createRadialGradient(ex,ey,0,ex,ey,9);
+    eyeG.addColorStop(0,'rgba(110,231,183,0.95)');
+    eyeG.addColorStop(0.5,'rgba(16,185,129,0.65)');
+    eyeG.addColorStop(1,'transparent');
+    bx.save();bx.beginPath();bx.translate(ex,ey);bx.scale(1,5.5/9);
+    bx.arc(0,0,9,0,Math.PI*2);bx.restore();bx.fillStyle=eyeG;bx.fill();
+    // pupil
+    bx.beginPath();bx.arc(ex,ey,2.8,0,Math.PI*2);
+    bx.fillStyle='rgba(110,231,183,0.92)';bx.fill();
+    // specular
+    bx.beginPath();bx.arc(ex-0.8,ey-0.8,1.1,0,Math.PI*2);
+    bx.fillStyle='rgba(255,255,255,0.88)';bx.fill();
+  });
+
+  // Mouth
+  const mg=bx.createLinearGradient(124,168,156,168);
+  mg.addColorStop(0,'#10b981');mg.addColorStop(1,'#6ee7b7');
+  bx.strokeStyle=mg;bx.lineWidth=2;
+  bx.beginPath();bx.moveTo(124,168);bx.quadraticCurveTo(140,176,156,168);bx.stroke();
+
+  // Circuit traces
+  bx.lineWidth=0.8;bx.strokeStyle='rgba(110,231,183,0.10)';
+  [[78,108,55,90],[196,115,222,98],[72,158,48,154],[206,162,234,158]].forEach(([x1,y1,x2,y2])=>{
+    bx.beginPath();bx.moveTo(x1,y1);bx.lineTo(x2,y2);bx.stroke();
+    bx.beginPath();bx.arc(x2,y2,1.8,0,Math.PI*2);
+    bx.fillStyle='rgba(110,231,183,0.18)';bx.fill();
+  });
+}
+
+drawTarget();
+let cleanData=bx.getImageData(0,0,W,H);
+
+/* ═══ NOISE FIELD ═══ */
+let noiseField=new Uint8Array(W*H*3);
+function buildNoise(){
+  rngState=42;
+  for(let i=0;i<W*H;i++){
+    noiseField[i*3]=Math.floor(lcg()*256);
+    noiseField[i*3+1]=Math.floor(lcg()*256);
+    noiseField[i*3+2]=Math.floor(lcg()*256);
+  }
+}
+buildNoise();
+
+/* ═══ COMPOSE ═══ */
+const compImg=nx.createImageData(W,H);
+function compose(noiseMix,blockSize){
+  const cd=cleanData.data;
+  const d=compImg.data;
+  const bs=Math.max(1,Math.round(blockSize));
+  const half=Math.floor(bs/2);
+  for(let y=0;y<H;y++){
+    const sy=Math.min(Math.floor(y/bs)*bs+half,H-1);
+    for(let x=0;x<W;x++){
+      const sx=Math.min(Math.floor(x/bs)*bs+half,W-1);
+      const si=(sy*W+sx)*4;
+      const di=(y*W+x);
+      const ni=di*3;
+      const pi=di*4;
+      d[pi]=Math.round(noiseField[ni]*noiseMix+cd[si]*(1-noiseMix));
+      d[pi+1]=Math.round(noiseField[ni+1]*noiseMix+cd[si+1]*(1-noiseMix));
+      d[pi+2]=Math.round(noiseField[ni+2]*noiseMix+cd[si+2]*(1-noiseMix));
+      d[pi+3]=255;
+    }
+  }
+  nx.putImageData(compImg,0,0);
+}
+
+/* ═══ LAYER SCHEDULE ═══ */
+const layers=[
+  {name:'Input noise',  t0:0.0,t1:1.2,bs0:280,bs1:280,nm0:1.00,nm1:1.00},
+  {name:'Conv Layer 1', t0:1.2,t1:2.8,bs0:280,bs1:32, nm0:1.00,nm1:0.70},
+  {name:'Conv Layer 2', t0:2.8,t1:4.2,bs0:32, bs1:12, nm0:0.70,nm1:0.40},
+  {name:'Attention',    t0:4.2,t1:5.8,bs0:12, bs1:5,  nm0:0.40,nm1:0.18},
+  {name:'Decoder',      t0:5.8,t1:7.4,bs0:5,  bs1:2,  nm0:0.18,nm1:0.04},
+  {name:'Output',       t0:7.4,t1:9.0,bs0:2,  bs1:1,  nm0:0.04,nm1:0.00},
+];
+
+function easeInOut(t){return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
+
+function getSchedule(elapsed){
+  for(let i=layers.length-1;i>=0;i--){
+    const l=layers[i];
+    if(elapsed>=l.t0){
+      const p=Math.min((elapsed-l.t0)/(l.t1-l.t0),1);
+      const e=easeInOut(p);
+      return{
+        blockSize:l.bs0+(l.bs1-l.bs0)*e,
+        noiseMix:l.nm0+(l.nm1-l.nm0)*e,
+        layerIdx:i,layerProgress:p
+      };
+    }
+  }
+  return{blockSize:280,noiseMix:1,layerIdx:0,layerProgress:0};
+}
+
+/* ═══ HEATMAP ═══ */
+const hotspots=[
+  {cx:140,cy:132,rx:70,ry:82,r:16,g:185,b:129,a0:0.32,a1:0.14},
+  {cx:110,cy:118,rx:18,ry:12,r:110,g:231,b:183,a0:0.45,a1:0},
+  {cx:170,cy:118,rx:18,ry:12,r:110,g:231,b:183,a0:0.45,a1:0},
+  {cx:140,cy:168,rx:20,ry:10,r:6,g:214,b:160,a0:0.35,a1:0},
+];
+function drawHeatmap(elapsed,globalT){
+  hx.clearRect(0,0,W,H);
+  if(elapsed<4.2)return;
+  let intensity;
+  if(elapsed<9.0){intensity=Math.min((elapsed-4.2)/1.5,1)*0.8}
+  else{intensity=0.5+0.2*Math.sin(globalT*2)}
+  hotspots.forEach(h=>{
+    const pulse=0.7+0.3*Math.sin(globalT*3+h.cx*0.05);
+    const a0i=intensity*h.a0*pulse;
+    const a1i=intensity*(h.a1||0)*pulse;
+    hx.save();
+    hx.translate(h.cx,h.cy);
+    hx.scale(1,h.ry/h.rx);
+    const g=hx.createRadialGradient(0,0,0,0,0,h.rx);
+    g.addColorStop(0,`rgba(${h.r},${h.g},${h.b},${a0i.toFixed(3)})`);
+    if(h.a1>0)g.addColorStop(0.6,`rgba(${h.r},${h.g},${h.b},${a1i.toFixed(3)})`);
+    g.addColorStop(1,'transparent');
+    hx.fillStyle=g;
+    hx.beginPath();hx.arc(0,0,h.rx,0,Math.PI*2);hx.fill();
+    hx.restore();
+  });
+}
+
+/* ═══ UI — LAYER PANEL ═══ */
+const panel=document.getElementById('layer-panel');
+const layerRows=[];
+layers.forEach(l=>{
+  const row=document.createElement('div');row.className='layer-row';
+  const nm=document.createElement('span');nm.className='layer-name';nm.textContent=l.name;
+  const track=document.createElement('div');track.className='bar-track';
+  const fill=document.createElement('div');fill.className='bar-fill';
+  track.appendChild(fill);
+  const pct=document.createElement('span');pct.className='layer-pct';pct.textContent='0%';
+  row.appendChild(nm);row.appendChild(track);row.appendChild(pct);
+  panel.appendChild(row);
+  layerRows.push({nm,fill,pct});
+});
+
+const vEpoch=document.getElementById('v-epoch');
+const vLoss=document.getElementById('v-loss');
+const vStep=document.getElementById('v-step');
+
+function updateLayerUI(elapsed,curIdx,curProg){
+  layerRows.forEach((r,i)=>{
+    if(i<curIdx){
+      r.nm.className='layer-name done';
+      r.fill.style.width='100%';r.fill.className='bar-fill';
+      r.pct.className='layer-pct done';r.pct.textContent='100%';
+    }else if(i===curIdx){
+      const p=Math.round(Math.min(curProg,1)*100);
+      r.nm.className='layer-name active';
+      r.fill.style.width=p+'%';r.fill.className='bar-fill active';
+      r.pct.className='layer-pct active';r.pct.textContent=p+'%';
+    }else{
+      r.nm.className='layer-name';
+      r.fill.style.width='0%';r.fill.className='bar-fill';
+      r.pct.className='layer-pct';r.pct.textContent='0%';
+    }
+  });
+}
+
+function updateReadout(elapsed){
+  const step=Math.min(Math.floor(elapsed/9.0*512),512);
+  const epoch=Math.floor(step/64);
+  const loss=Math.max(0.0012,2.4831*Math.exp(-elapsed*0.55)+0.001*(Math.random()-0.5));
+  vEpoch.textContent=String(epoch).padStart(3,'0');
+  vLoss.textContent=loss.toFixed(4);
+  vStep.textContent=step+'/512';
+}
+
+/* ═══ ANIMATION LOOP ═══ */
+let elapsed=0,globalT=0,lastTs=0,running=true;
+
+function frame(ts){
+  if(!lastTs)lastTs=ts;
+  const dt=Math.min((ts-lastTs)/1000,0.05);
+  lastTs=ts;
+  elapsed+=dt;globalT+=dt;
+
+  if(elapsed<=10.5){
+    const s=getSchedule(Math.min(elapsed,9.0));
+    compose(s.noiseMix,s.blockSize);
+    drawHeatmap(elapsed,globalT);
+    updateLayerUI(elapsed,s.layerIdx,s.layerProgress);
+    updateReadout(Math.min(elapsed,9.0));
+  }else{
+    drawHeatmap(elapsed,globalT);
+  }
+  if(running)requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* ═══ RETRAIN ═══ */
+document.getElementById('retrain-btn').addEventListener('click',()=>{
+  elapsed=0;globalT=0;lastTs=0;
+  rngState=42;buildNoise();
+  nx.clearRect(0,0,W,H);hx.clearRect(0,0,W,H);
+  layerRows.forEach(r=>{
+    r.nm.className='layer-name';r.fill.style.width='0%';r.fill.className='bar-fill';
+    r.pct.className='layer-pct';r.pct.textContent='0%';
+  });
+  vEpoch.textContent='000';vLoss.textContent='2.4831';vStep.textContent='0/512';
+});
+})();
+</script>
+</body>
+</html>

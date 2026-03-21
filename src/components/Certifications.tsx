@@ -94,6 +94,7 @@ const certifications = [
 const items = [...certifications, ...certifications];
 
 interface CertCardProps {
+  key?: string | number;
   cert: typeof certifications[number];
 }
 
@@ -105,7 +106,7 @@ function CertCard({ cert }: CertCardProps) {
     <div
       className="relative shrink-0 rounded-2xl overflow-hidden cursor-pointer"
       style={{
-        width: '340px',
+        width: 'clamp(260px, 75vw, 340px)',
         boxShadow: '0 0 0 1px rgba(255,255,255,0.07)',
       }}
       onMouseEnter={() => setHovered(true)}

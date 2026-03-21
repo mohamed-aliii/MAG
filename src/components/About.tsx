@@ -1,5 +1,5 @@
-import { Award } from 'lucide-react';
 import { motion } from 'motion/react';
+import NeuralPortrait from './NeuralPortrait';
 
 export default function About() {
   return (
@@ -40,27 +40,9 @@ export default function About() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
-            className="relative order-first lg:order-last"
+            className="order-first lg:order-last flex justify-center"
           >
-            <div className="aspect-square rounded-3xl overflow-hidden glass p-2 max-w-md mx-auto">
-              <img
-                src="https://picsum.photos/seed/tech/800/800"
-                alt="Mohamed Ali Ghoniem"
-                className="w-full h-full object-cover rounded-2xl grayscale hover:grayscale-0 transition-all duration-700"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-            <div className="absolute -bottom-4 -right-4 glass p-4 md:p-6 rounded-2xl border-emerald-500/30 hidden sm:block">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-emerald-500 rounded-full flex items-center justify-center text-slate-950">
-                  <Award className="w-5 h-5 md:w-6 md:h-6" />
-                </div>
-                <div>
-                  <p className="text-xs md:text-sm font-bold text-white">AI/ML Specialist</p>
-                  <p className="text-[10px] md:text-xs text-slate-500">Certified Developer</p>
-                </div>
-              </div>
-            </div>
+            <NeuralPortrait />
           </motion.div>
         </div>
       </div>
