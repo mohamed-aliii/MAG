@@ -17,7 +17,7 @@ import Footer from './components/Footer';
 
 export default function App() {
   return (
-    <div className="relative min-h-screen bg-slate-950 text-slate-50 selection:bg-emerald-500/30 selection:text-emerald-500">
+    <div className="relative min-h-screen bg-transparent text-slate-50 selection:bg-emerald-500/30 selection:text-emerald-500">
       <Background />
       <CustomCursor />
       <Navbar />
