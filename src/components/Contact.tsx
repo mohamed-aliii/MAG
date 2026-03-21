@@ -1,19 +1,45 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Mail, Phone, MapPin, Linkedin, Github } from 'lucide-react';
+import { Mail, Phone, MapPin, Linkedin, Github, Loader2, CheckCircle2, XCircle } from 'lucide-react';
+
+// ⬇️ Paste your Web3Forms access key here (get one free at https://web3forms.com)
+const ACCESS_KEY = 'cbead54b-7e6a-4e44-a785-7d0c97c94b58';
 
 export default function Contact() {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // In a real app, you'd handle form submission here
-    alert('Thank you for your message! I will get back to you soon.');
-    (e.target as HTMLFormElement).reset();
+    setStatus('loading');
+
+    const form = e.target as HTMLFormElement;
+    const data = new FormData(form);
+    data.append('access_key', ACCESS_KEY);
+
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        body: data,
+      });
+      const json = await res.json();
+      if (json.success) {
+        setStatus('success');
+        form.reset();
+        setTimeout(() => setStatus('idle'), 4000);
+      } else {
+        setStatus('error');
+        setTimeout(() => setStatus('idle'), 4000);
+      }
+    } catch {
+      setStatus('error');
+      setTimeout(() => setStatus('idle'), 4000);
+    }
   };
 
   return (
     <section id="contact" className="py-20 md:py-32 px-6 relative">
       <div className="max-w-7xl mx-auto">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -46,17 +72,17 @@ export default function Contact() {
                 </div>
               </div>
               <div className="flex gap-4 mt-12">
-                <a 
-                  href="https://www.linkedin.com/in/mohammed-ghoneim/" 
-                  target="_blank" 
+                <a
+                  href="https://www.linkedin.com/in/mohammed-ghoneim/"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="w-12 h-12 bg-slate-950 text-white rounded-xl flex items-center justify-center hover:scale-110 transition-transform"
                 >
                   <Linkedin className="w-6 h-6" />
                 </a>
-                <a 
-                  href="https://github.com/mohamed-aliii" 
-                  target="_blank" 
+                <a
+                  href="https://github.com/mohamed-aliii"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="w-12 h-12 bg-slate-950 text-white rounded-xl flex items-center justify-center hover:scale-110 transition-transform"
                 >
@@ -66,40 +92,53 @@ export default function Contact() {
             </div>
             <div className="p-8 md:p-16">
               <form onSubmit={handleSubmit} className="space-y-6">
+                <input type="hidden" name="subject" value="New message from MAG portfolio" />
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Full Name</label>
-                    <input 
-                      type="text" 
-                      required 
-                      className="w-full bg-slate-800/50 border border-white/10 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-emerald-500 transition-colors" 
-                      placeholder="John Doe" 
+                    <input
+                      type="text"
+                      name="name"
+                      required
+                      className="w-full bg-slate-800/50 border border-white/10 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-emerald-500 transition-colors"
+                      placeholder="John Doe"
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Email Address</label>
-                    <input 
-                      type="email" 
-                      required 
-                      className="w-full bg-slate-800/50 border border-white/10 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-emerald-500 transition-colors" 
-                      placeholder="john@example.com" 
+                    <input
+                      type="email"
+                      name="email"
+                      required
+                      className="w-full bg-slate-800/50 border border-white/10 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-emerald-500 transition-colors"
+                      placeholder="john@example.com"
                     />
                   </div>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Message</label>
-                  <textarea 
-                    rows={4} 
-                    required 
-                    className="w-full bg-slate-800/50 border border-white/10 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-emerald-500 transition-colors" 
-                    placeholder="How can I help you?" 
+                  <textarea
+                    rows={4}
+                    name="message"
+                    required
+                    className="w-full bg-slate-800/50 border border-white/10 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-emerald-500 transition-colors"
+                    placeholder="How can I help you?"
                   />
                 </div>
-                <button 
-                  type="submit" 
-                  className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl transition-all duration-300 transform hover:scale-[1.01]"
+                <button
+                  type="submit"
+                  disabled={status === 'loading'}
+                  className={`w-full py-4 font-bold rounded-xl transition-all duration-300 transform hover:scale-[1.01] flex items-center justify-center gap-2 ${status === 'success'
+                      ? 'bg-emerald-400 text-slate-950'
+                      : status === 'error'
+                        ? 'bg-red-500 text-white'
+                        : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
+                    }`}
                 >
-                  Send Message
+                  {status === 'loading' && <><Loader2 className="w-5 h-5 animate-spin" /> Sending...</>}
+                  {status === 'success' && <><CheckCircle2 className="w-5 h-5" /> Message Sent!</>}
+                  {status === 'error' && <><XCircle className="w-5 h-5" /> Failed — Try Again</>}
+                  {status === 'idle' && 'Send Message'}
                 </button>
               </form>
             </div>
